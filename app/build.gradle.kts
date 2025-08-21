@@ -62,7 +62,7 @@ android {
 }
 
 dependencies {
-    implementation("org.lsposed.libcxx:libcxx:28.1.13356709")
+    implementation("dev.rikka.ndk.thirdparty:cxx:1.2.0")
     implementation("org.lsposed.hiddenapibypass:hiddenapibypass:6.1")
 }
 
@@ -85,7 +85,7 @@ tasks.register("copyFiles") {
 tasks.register<Zip>("zip") {
     dependsOn("copyFiles")
 
-    archiveFileName.set("PlayIntegrityFork.zip")
+    archiveFileName.set("TargetedFix.zip")
     destinationDirectory.set(project.rootDir.resolve("out"))
 
     from(project.rootDir.resolve("module"))

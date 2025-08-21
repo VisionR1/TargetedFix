@@ -1,7 +1,7 @@
-id=playintegrityfix
-name=Play Integrity Fork
-version=v14
-versionCode=140001
-author=osm0sis & chiteroman @ xda-developers
-description=Fix <A13 Play Integrity DEVICE verdict
-updateJson=https://raw.githubusercontent.com/osm0sis/PlayIntegrityFork/main/update.json
+id=targetedfix
+name=Targeted Fix
+version=v1
+versionCode=100
+author=osm0sis & chiteroman @ xda-developers (Modded by VisionR1)
+description=Based on PIFork, but with a target list to spoof a FP to the apps inside in the list.
+updateJson=https://raw.githubusercontent.com/VisionR1/TargetedFix/main/update.json

@@ -17,8 +17,8 @@
 
 #define DEX_FILE_PATH "/data/adb/modules/targetedfix/classes.dex"
 
-#define DEFAULT_JSON_FILE_PATH "/data/adb/modules/targetedfix/fix.json"
-#define TARGET_LIST_PATH "/data/adb/modules/targetedfix/target.txt"
+#define JSON_FILE_PATH "/data/adb/modules/targetedfix/config/fix.json"
+#define TARGET_LIST_PATH "/data/adb/modules/targetedfix/config/target.txt"
 
 static int verboseLogs = 0;
 static int spoofBuild = 1;
@@ -34,18 +34,16 @@ static std::map<void *, T_Callback> callbacks;
 
 static void modify_callback(void *cookie, const char *name, const char *value, uint32_t serial) {
     if (cookie == nullptr || name == nullptr || value == nullptr || !callbacks.contains(cookie)) return;
+
     const char *oldValue = value;
+	
     std::string prop(name);
 
-    if (prop == "init.svc.adbd") {
-        value = "stopped";
-    } else if (prop == "sys.usb.state") {
-        value = "mtp";
-    }
-
     if (jsonProps.count(prop)) {
+        // Exact property match
         value = jsonProps[prop].c_str();
     } else {
+        // Leading * wildcard property match
         for (const auto &p: jsonProps) {
             if (p.first.starts_with("*") && prop.ends_with(p.first.substr(1))) {
                 value = p.second.c_str();
@@ -64,6 +62,7 @@ static void modify_callback(void *cookie, const char *name, const char *value, u
 }
 
 static void (*o_system_property_read_callback)(const prop_info *, T_Callback, void *);
+
 static void my_system_property_read_callback(const prop_info *pi, T_Callback callback, void *cookie) {
     if (pi == nullptr || callback == nullptr || cookie == nullptr) {
         return o_system_property_read_callback(pi, callback, cookie);
@@ -92,18 +91,22 @@ public:
 
     void preAppSpecialize(zygisk::AppSpecializeArgs *args) override {
         bool shouldSpoof = false;
+		
         auto rawProcess = env->GetStringUTFChars(args->nice_name, nullptr);
         auto rawDir = env->GetStringUTFChars(args->app_data_dir, nullptr);
-
+        
+        // Prevent crash on apps with no data dir
         if (rawDir == nullptr) {
             env->ReleaseStringUTFChars(args->nice_name, rawProcess);
             api->setOption(zygisk::DLCLOSE_MODULE_LIBRARY);
             return;
         }
 
+        pkgName = rawProcess;
         std::string_view process(rawProcess);
 
         long dexSize = 0, jsonSize = 0, targetSize = 0;
+		
         int fd = api->connectCompanion();
 
         // Send package name to companion
@@ -148,23 +151,27 @@ public:
             api->setOption(zygisk::DLCLOSE_MODULE_LIBRARY);
             return;
         }
-
+        
+        // We are in TargetPackage now, force unmount
         api->setOption(zygisk::FORCE_DENYLIST_UNMOUNT);
         
         std::string jsonString(jsonVector.cbegin(), jsonVector.cend());
         json = nlohmann::json::parse(jsonString, nullptr, false, true);
+
+        jsonVector.clear();
     }
 
     void postAppSpecialize(const zygisk::AppSpecializeArgs *args) override {
         if (dexVector.empty() || json.empty()) return;
+
         readJson();
+
         if (spoofProps > 0) doHook();
-        inject();
-        
+        if (spoofBuild + spoofProvider + spoofSignature > 0) inject();
+
         dexVector.clear();
-        jsonVector.clear();
-        targetVector.clear();
         json.clear();
+        targetVector.clear();
         targetPackages.clear();
     }
 
@@ -179,6 +186,7 @@ private:
     std::vector<char> jsonVector;
     std::vector<char> targetVector;
     nlohmann::json json;
+    std::string pkgName;
 	std::vector<std::string> targetPackages;
 
     void parseTargetVector() {
@@ -224,6 +232,8 @@ private:
 
     void readJson() {
         LOGD("JSON contains %d keys!", static_cast<int>(json.size()));
+        
+        // Verbose logging level
         if (json.contains("verboseLogs")) {
             if (!json["verboseLogs"].is_null() && json["verboseLogs"].is_string() && json["verboseLogs"] != "") {
                 verboseLogs = stoi(json["verboseLogs"].get<std::string>());
@@ -233,6 +243,8 @@ private:
             }
             json.erase("verboseLogs");
         }
+        
+        // Advanced spoofing settings
         if (json.contains("spoofBuild")) {
             if (!json["spoofBuild"].is_null() && json["spoofBuild"].is_string() && json["spoofBuild"] != "") {
                 spoofBuild = stoi(json["spoofBuild"].get<std::string>());
@@ -269,10 +281,12 @@ private:
             }
             json.erase("spoofSignature");
         }
+
         std::vector<std::string> eraseKeys;
         for (auto &jsonList: json.items()) {
             if (verboseLogs > 1) LOGD("Parsing %s", jsonList.key().c_str());
             if (jsonList.key().find_first_of("*.") != std::string::npos) {
+                // Name contains . or * (wildcard) so assume real property name
                 if (!jsonList.value().is_null() && jsonList.value().is_string()) {
                     if (jsonList.value() == "") {
                         LOGD("%s is empty, skipping", jsonList.key().c_str());
@@ -286,36 +300,40 @@ private:
                 eraseKeys.push_back(jsonList.key());
             }
         }
+        // Remove properties from parsed JSON
         for (auto key: eraseKeys) {
             if (json.contains(key)) json.erase(key);
         }
     }
 
     void inject() {
-        LOGD("JNI: Getting system classloader");
+        const char* niceName = "APP";
+
+        LOGD("JNI %s: Getting system classloader", niceName);
         auto clClass = env->FindClass("java/lang/ClassLoader");
         auto getSystemClassLoader = env->GetStaticMethodID(clClass, "getSystemClassLoader", "()Ljava/lang/ClassLoader;");
         auto systemClassLoader = env->CallStaticObjectMethod(clClass, getSystemClassLoader);
 
-        LOGD("JNI: Creating module classloader");
+        LOGD("JNI %s: Creating module classloader", niceName);
         auto dexClClass = env->FindClass("dalvik/system/InMemoryDexClassLoader");
         auto dexClInit = env->GetMethodID(dexClClass, "<init>", "(Ljava/nio/ByteBuffer;Ljava/lang/ClassLoader;)V");
         auto buffer = env->NewDirectByteBuffer(dexVector.data(), static_cast<jlong>(dexVector.size()));
         auto dexCl = env->NewObject(dexClClass, dexClInit, buffer, systemClassLoader);
 
-        LOGD("JNI: Loading module class");
-        auto loadClass = env->GetMethodID(clClass, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
-        auto entryClassName = env->NewStringUTF("es.chiteroman.playintegrityfix.EntryPoint");
+        LOGD("JNI %s: Loading module class", niceName);
+        auto loadClass = env->GetMethodID(clClass, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");        
+        const char* className = "es.chiteroman.playintegrityfix.EntryPoint";
+        auto entryClassName = env->NewStringUTF(className);
         auto entryClassObj = env->CallObjectMethod(dexCl, loadClass, entryClassName);
-
+		
         auto entryClass = (jclass) entryClassObj;
 
-        LOGD("JNI: Sending JSON");
+        LOGD("JNI %s: Sending JSON", niceName);
         auto receiveJson = env->GetStaticMethodID(entryClass, "receiveJson", "(Ljava/lang/String;)V");
         auto javaStr = env->NewStringUTF(json.dump().c_str());
         env->CallStaticVoidMethod(entryClass, receiveJson, javaStr);
 
-        LOGD("JNI: Calling init");
+        LOGD("JNI %s: Calling EntryPoint.init", niceName);
         auto entryInit = env->GetStaticMethodID(entryClass, "init", "(IIII)V");
         env->CallStaticVoidMethod(entryClass, entryInit, verboseLogs, spoofBuild, spoofProvider, spoofSignature);
     }
@@ -324,17 +342,18 @@ private:
 static void companion(int fd) {
     long dexSize = 0, jsonSize = 0, targetSize = 0;
     std::vector<char> dexVector, jsonVector, targetVector;
-
-    // Read package name from main process
+    
+    // Receive package name to enable per-app JSON
+    std::string processName;
     long processSize = 0;
     read(fd, &processSize, sizeof(long));
-    std::string processName;
     processName.resize(processSize);
     read(fd, processName.data(), processSize);
 
     // Replace ':' with '.' for subprocess filename consistency
     std::replace(processName.begin(), processName.end(), ':', '.');
-    
+
+    // --- File Reading Logic ---
     FILE *dex = fopen(DEX_FILE_PATH, "rb");
 	
     if (dex) {
@@ -344,15 +363,16 @@ static void companion(int fd) {
 		
         dexVector.resize(dexSize);
         fread(dexVector.data(), 1, dexSize, dex);
+		
         fclose(dex);
     }
 
     FILE *json = nullptr;
-    std::string customJsonPath = "/data/adb/modules/targetedfix/" + processName + ".json";
+    std::string customJsonPath = "/data/adb/modules/targetedfix/config/" + processName + ".json";
     json = fopen(customJsonPath.c_str(), "r");
 
     if (!json) {
-        json = fopen(DEFAULT_JSON_FILE_PATH, "r");
+        json = fopen(JSON_FILE_PATH, "r");
     }
 
     if (json) {
@@ -362,11 +382,11 @@ static void companion(int fd) {
 		
         jsonVector.resize(jsonSize);
         fread(jsonVector.data(), 1, jsonSize, json);
+		
         fclose(json);
     }
 
     FILE *target = fopen(TARGET_LIST_PATH, "r");
-	
     if (target) {
         fseek(target, 0, SEEK_END);
         targetSize = ftell(target);
@@ -374,6 +394,7 @@ static void companion(int fd) {
 		
         targetVector.resize(targetSize);
         fread(targetVector.data(), 1, targetSize, target);
+		
         fclose(target);
     }
 

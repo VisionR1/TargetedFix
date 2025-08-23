@@ -12,6 +12,5 @@
 build/
 local.properties
 module/classes.dex
-module/pif.json
 module/zygisk/
 out/

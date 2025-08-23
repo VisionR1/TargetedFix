@@ -25,3 +25,10 @@ A example, inside in the target.txt write the package name but then create a com
 
 Also, read the original README.md from PIFork:
 https://github.com/osm0sis/PlayIntegrityFork?tab=readme-ov-file#play-integrity-fork
+
+## How use this module
+
+For generally use, customize target packages in /data/adb/targetedfix/config/target.txt & the FP in the /data/adb/targetedfix/config/fix.json to "fix" the FP.
+
+For multi-target with different FPs, customize target packages in /data/adb/targetedfix/config/target.txt, but instead of fix.json rename it to the package name or process of the apps (example com.android.vending.json & com.google.android.gms.unstable.json).
+For the GMS, it's the same process with PIFork.

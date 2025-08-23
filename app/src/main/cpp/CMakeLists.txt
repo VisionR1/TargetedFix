@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22.1)
 
-project(playintegrityfix)
+project(targetedfix)
 
 find_package(cxx REQUIRED CONFIG)
 

@@ -22,7 +22,7 @@
 
 static int verboseLogs = 0;
 static int spoofBuild = 1;
-static int spoofProps = 0;
+static int spoofProps = 1;
 static int spoofProvider = 0;
 static int spoofSignature = 0;
 

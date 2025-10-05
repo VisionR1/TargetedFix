@@ -17,7 +17,10 @@
 
 #define DEX_FILE_PATH "/data/adb/modules/targetedfix/classes.dex"
 
+#define PROP_FILE_PATH "/data/adb/modules/targetedfix/config/fix.prop"
+
 #define JSON_FILE_PATH "/data/adb/modules/targetedfix/config/fix.json"
+
 #define TARGET_LIST_PATH "/data/adb/modules/targetedfix/config/target.txt"
 
 static int verboseLogs = 0;
@@ -155,10 +158,53 @@ public:
         // We are in TargetPackage now, force unmount
         api->setOption(zygisk::FORCE_DENYLIST_UNMOUNT);
         
-        std::string jsonString(jsonVector.cbegin(), jsonVector.cend());
-        json = nlohmann::json::parse(jsonString, nullptr, false, true);
-
+        // START: Prop-to-JSON Conversion Logic
+        std::string configString(jsonVector.cbegin(), jsonVector.cend());
         jsonVector.clear();
+
+        // Check if the file content is NOT valid JSON
+        if (!nlohmann::json::accept(configString, true)) {
+            LOGD("Converting config from prop format to JSON format");
+
+            configString.erase(std::remove(configString.begin(), configString.end(), '\r'), configString.end());
+
+            std::string jsonString = "{";
+            char propDelimiter = '=';
+            char commentDelimiter = '#';
+            size_t beginPos = 0, endPos = 0;
+            while ((endPos = configString.find('\n', beginPos)) != std::string::npos) {
+                std::string line = configString.substr(beginPos, endPos - beginPos);
+                beginPos = endPos + 1;
+                if (line.empty() || line[0] == '#') continue;
+                std::string name, value;
+                size_t propDelimiterPos = line.find(propDelimiter);
+                if (propDelimiterPos != std::string::npos) {
+                    name = line.substr(0, propDelimiterPos);
+                    value = line.substr(propDelimiterPos + 1);
+                } else {
+                    LOGD("Invalid prop entry, skipping");
+                    continue;
+                }
+                size_t commentDelimiterPos = value.find(commentDelimiter);
+                if (commentDelimiterPos != std::string::npos) {
+                    value = value.substr(0, commentDelimiterPos);
+                    size_t lastPos = value.find_last_not_of(" ");
+                    if (lastPos != std::string::npos) value.resize(lastPos + 1);
+                }
+                // Include all name=value pairs, even if value is empty (used as "delete"/clear command)
+                if (!name.empty()) {
+                    jsonString += "\n\"" + name + "\": \"" + value + "\",";
+                }
+            }
+            if (jsonString.back() == ',') jsonString.pop_back();
+            jsonString += "\n}\n";
+
+            configString = jsonString; // Update the string to the converted JSON
+        }
+        // END: Prop-to-JSON Conversion Logic
+
+        json = nlohmann::json::parse(configString, nullptr, false, true);
+        configString.clear(); // Clear temporary string
     }
 
     void postAppSpecialize(const zygisk::AppSpecializeArgs *args) override {
@@ -288,10 +334,14 @@ private:
             if (jsonList.key().find_first_of("*.") != std::string::npos) {
                 // Name contains . or * (wildcard) so assume real property name
                 if (!jsonList.value().is_null() && jsonList.value().is_string()) {
+                    // LOGIC: Check for empty string to signal clear/delete command
                     if (jsonList.value() == "") {
-                        LOGD("%s is empty, skipping", jsonList.key().c_str());
+                        if (verboseLogs > 0) LOGD("Adding '%s' to properties list as clear command (value: \"\")", jsonList.key().c_str());
+                        // Store the empty string as the clear marker
+                        jsonProps[jsonList.key()] = "";
                     } else {
                         if (verboseLogs > 0) LOGD("Adding '%s' to properties list", jsonList.key().c_str());
+                        // Store the new value
                         jsonProps[jsonList.key()] = jsonList.value();
                     }
                 } else {
@@ -336,6 +386,15 @@ private:
         LOGD("JNI %s: Calling EntryPoint.init", niceName);
         auto entryInit = env->GetStaticMethodID(entryClass, "init", "(IIII)V");
         env->CallStaticVoidMethod(entryClass, entryInit, verboseLogs, spoofBuild, spoofProvider, spoofSignature);
+		
+        env->DeleteLocalRef(javaStr);
+        env->DeleteLocalRef(clClass);
+        env->DeleteLocalRef(dexClClass);
+        env->DeleteLocalRef(systemClassLoader);
+        env->DeleteLocalRef(dexCl);
+        env->DeleteLocalRef(buffer);
+        env->DeleteLocalRef(entryClassName);
+        env->DeleteLocalRef(entryClassObj);
     }
 };
 
@@ -368,9 +427,23 @@ static void companion(int fd) {
     }
 
     FILE *json = nullptr;
-    std::string customJsonPath = "/data/adb/modules/targetedfix/config/" + processName + ".json";
-    json = fopen(customJsonPath.c_str(), "r");
+    
+    // 1. Try per-app .prop file (e.g., com.example.app.prop)
+    std::string customPropPath = "/data/adb/modules/targetedfix/config/" + processName + ".prop";
+    json = fopen(customPropPath.c_str(), "r");
 
+    // 2. Fallback to per-app .json file (e.g., com.example.app.json)
+    if (!json) {
+        std::string customJsonPath = "/data/adb/modules/targetedfix/config/" + processName + ".json";
+        json = fopen(customJsonPath.c_str(), "r");
+    }
+
+    // 3. Fallback to standard fix.prop file
+    if (!json) {
+        json = fopen(PROP_FILE_PATH, "r");
+    }
+    
+    // 4. Fallback to standard fix.json file
     if (!json) {
         json = fopen(JSON_FILE_PATH, "r");
     }

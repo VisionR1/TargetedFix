@@ -19,16 +19,16 @@ To use this module you must have one of the following (latest versions):
 
 It injects a classes.dex file to modify fields in the android.os.Build class. Also, it creates a hook in the native code to modify system properties. These are spoofed only in the apps inside in the target list.
 
-Also, there have a robust multi-target .json spoofer, which only targeted specific apps with a differned FP than the default .json. 
+Also, there have a robust multi-target .json/prop, which only targeted specific apps with a differned FP than the default .json/prop. 
 
-A example, inside in the target.txt write the package name but then create a com.android.vending.json or com.google.android.gms.unstable.json with what FP you want inside, etc.
+A example, inside in the target.txt write the package name but then create a com.android.vending.json/prop or com.google.android.gms.unstable.json/prop with what FP you want inside, etc.
 
 Also, read the original README.md from PIFork:
 https://github.com/osm0sis/PlayIntegrityFork?tab=readme-ov-file#play-integrity-fork
 
 ## How use this module
 
-For generally use, customize target packages in /data/adb/targetedfix/config/target.txt & the FP in the /data/adb/targetedfix/config/fix.json to "fix" the FP.
+For generally use, customize target packages in /data/adb/targetedfix/config/target.txt & the FP in the /data/adb/targetedfix/config/fix.json/prop to "fix" the FP.
 
-For multi-target with different FPs, customize target packages in /data/adb/targetedfix/config/target.txt, but instead of fix.json rename it to the package name or process of the apps (example com.android.vending.json & com.google.android.gms.unstable.json).
+For multi-target with different FPs, customize target packages in /data/adb/targetedfix/config/target.txt, but instead of fix.json/prop rename it to the package name or process of the apps (example com.android.vending.json/prop & com.google.android.gms.unstable.json/prop).
 For the GMS, it's the same process with PIFork.

@@ -188,7 +188,40 @@ public final class EntryPoint {
 
     private static void setField(String name, String value) {
         if (value.isEmpty()) {
-            LOG(String.format("%s is empty, skipping", name));
+            try {
+                Field field;
+                if (classContainsField(Build.class, name)) {
+                    field = Build.class.getDeclaredField(name);
+                } else if (classContainsField(Build.VERSION.class, name)) {
+                    field = Build.VERSION.class.getDeclaredField(name);
+                } else {
+                    LOG(String.format("Couldn't determine '%s' class name", name));
+                    return;
+                }
+
+                field.setAccessible(true);
+                Class<?> fieldType = field.getType();
+
+                if (fieldType == String.class) {
+                    field.set(null, "");
+                    LOG(String.format("[%s]: Cleared (set to empty string)", name));
+                } else if (fieldType == int.class) {
+                    field.set(null, 0);
+                    LOG(String.format("[%s]: Cleared (set to 0)", name));
+                } else if (fieldType == long.class) {
+                    field.set(null, 0L);
+                    LOG(String.format("[%s]: Cleared (set to 0L)", name));
+                } else if (fieldType == boolean.class) {
+                    field.set(null, false);
+                    LOG(String.format("[%s]: Cleared (set to false)", name));
+                } else {
+                    LOG(String.format("[%s]: Unknown type %s, not cleared", name, fieldType));
+                }
+
+                field.setAccessible(false);
+            } catch (Exception e) {
+                LOG(String.format("Error resetting field '%s': %s", name, e));
+            }
             return;
         }
 
@@ -265,6 +298,6 @@ public final class EntryPoint {
     }
 
     static void LOG(String msg) {
-        Log.d("PIF/Java:DG", msg);
+        Log.d("TFIX/Java:APP", msg);
     }
 }

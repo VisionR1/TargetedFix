@@ -1,7 +1,7 @@
 id=targetedfix
 name=Targeted Fix
-version=v2
-versionCode=200
+version=v3
+versionCode=300
 author=Vision/VisionR1 (Modded), original PIFs by osm0sis & chiteroman @ xda-developers.
 description=Based on PIFork, but with a target list to spoof a FP to the apps inside in the list.
 updateJson=https://raw.githubusercontent.com/VisionR1/TargetedFix/main/update.json

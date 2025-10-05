@@ -1,3 +1,3 @@
 plugins {
-    id("com.android.application") version "8.12.1" apply false
+    id("com.android.application") version "8.13.0" apply false
 }

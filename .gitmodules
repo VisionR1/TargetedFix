@@ -4,3 +4,6 @@
 [submodule "local_cxa_atexit_finalize_impl"]
 	path = app/src/main/cpp/local_cxa_atexit_finalize_impl
 	url = https://github.com/5ec1cff/local_cxa_atexit_finalize_impl
+[submodule "app/src/main/cpp/local_cxa_atexit_finalize_impl"]
+	path = app/src/main/cpp/local_cxa_atexit_finalize_impl
+	url = https://github.com/5ec1cff/local_cxa_atexit_finalize_impl.git

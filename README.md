@@ -9,7 +9,7 @@
 
 ## Purpose
 
-A Zygisk module that features the ability to do multiple targeted spoofing of Build Field and System Property values. Multiple app processes can be targeted by configuring either a common prop/field value spoof list and a target list, or by creating prop/field value spoof lists that target particular processes.
+A Zygisk module that features the ability to do multiple targeted spoofing of Build Field and System Property values. Multiple app processes can be targeted by configuring a target list and either a common prop/field value spoof list or prop/field value spoof lists that target particular processes.
 
 This allows a user to spoof almost any prop/field values to app processes other than GMS DroidGuard or Vending, making it extremely versatile.
 
@@ -17,39 +17,45 @@ A common use is spoofing a different device when an app uses device identifiers,
 
 ## Original USNF spoofProvider function.
 
-This principle USNF/PIF/PIFork function is retained to give TF the ability to break key attestation for calls made by DroidGuard. Useful for the legacy Play Integrity DEVICE integrity evaluation.
+This principle USNF/PIF/PIFork function is retained to keep the ability to break key attestation for calls made by DroidGuard. Useful for 'fixing' legacy Play Integrity DEVICE response verdicts.
 
-spoofProvider registers a fake Keystore provider to break these calls with an exception (error) causing DroidGuard (on-device) to fall back to collecting non-attestation-key software signals for inclusion in a PI API token (delivery payload) that is used by Google servers to validate integrity verdicts. This is required to allow legacy DEVICE verdicts in unlocked devices with working Android Platform Key Attestation (Keymaster 3.0+).
+Detail: spoofProvider registers a fake Keystore provider to break these calls with an exception (error), causing DroidGuard (on-device) to fall back to collecting non-attestation-key software signals for inclusion in a PI API token (delivery payload) that is used by Google servers to validate integrity verdicts. This is required to allow legacy DEVICE verdicts in unlocked devices with working Android Platform Key Attestation (Keymaster 3.0+).
 
-Note that spoofProvider is designed to target DroidGuard (com.google.android.gms.unstable) key attestation calls only, and can't (as yet) be configured to target other processes with TF. 
+Note that spoofProvider is designed to target DroidGuard (com.google.android.gms.unstable) key attestation calls only, and can't (yet) be configured to target other processes with TF. 
 
 ## Original PIFork functions removed in TF
 
-• Root hiding needed for a Play Integrity legacy BASIC or higher response. TF doesn't include a function to hide root traces from DroidGuard, so either hiding with the GMS processes in denylist or whitelist hiding must be handled by another module. Note that Denylist should only be used as a list for other hiding modules as it will break Zygisk functions of this module if enforced (enabled).
+• Root hiding needed for a Play Integrity legacy BASIC or higher response. TF doesn't include a function to hide root traces from DroidGuard, so either hiding with the GMS processes in denylist or whitelist hiding must be handled by another module. Note that Denylist should only be used as a *list* for other hiding modules as enforcing (enabling) it will break Zygisk functions of this module.
 
-• Sensitive prop handling for DEVICE+ has been removed, so must be handled separately.
+• Sensitive prop handling for DEVICE+ has been removed, so must be handled separately by another module or script.
 
-• Various other script based fixes for some device-specific issues are removed.
+• Various script based fixes for some device-specific issues are removed.
 
-• spoofVendingSdk is removed as PI's sdkVersion can simply be spoofed with TF by spoofing a SDK_INT value to vending. Note that the equipment to spoofVendingSdk 1 is SDK_INT 32 (Android 12L).
+• spoofVendingSdk is removed as PI's sdkVersion can simply be spoofed with TF by spoofing an SDK_INT value to vending. Note that the equivalent to spoofVendingSdk 1 is SDK_INT 32 (Android 12L).
 
 • spoofVendingFinger is removed as TF can easily spoof any fingerprint to vending.
 
+<p style="text-align:center;">------------</p>
 
+To use this module you need one of the following combinations:
 
-
-To use this module you must have one of the following (latest versions):
-
-- [Magisk](https://github.com/topjohnwu/Magisk) with Zygisk enabled (and Enforce DenyList enabled if NOT also using [Shamiko](https://github.com/LSPosed/LSPosed.github.io?tab=readme-ov-file#shamiko) or [Zygisk Assistant](https://github.com/snake-4/Zygisk-Assistant) or [NoHello](https://github.com/MhmRdd/NoHello), for best results)
-- [KernelSU](https://github.com/tiann/KernelSU) with [Zygisk Next](https://github.com/Dr-TSNG/ZygiskNext) or [ReZygisk](https://github.com/PerformanC/ReZygisk) or [NeoZygisk](https://github.com/JingMatrix/NeoZygisk) module installed
-- [KernelSU Next](https://github.com/KernelSU-Next/KernelSU-Next) with [Zygisk Next](https://github.com/Dr-TSNG/ZygiskNext) or [ReZygisk](https://github.com/PerformanC/ReZygisk) or [NeoZygisk](https://github.com/JingMatrix/NeoZygisk) module installed
-- [APatch](https://github.com/bmax121/APatch) with [Zygisk Next](https://github.com/Dr-TSNG/ZygiskNext) or [ReZygisk](https://github.com/PerformanC/ReZygisk) or [NeoZygisk](https://github.com/JingMatrix/NeoZygisk) module installed
+- [Magisk](https://github.com/topjohnwu/Magisk) with Zygisk enabled or provided by a module, and either DenyList enabled or disabled if using [Shamiko](https://github.com/LSPosed/LSPosed.github.io?tab=readme-ov-file#shamiko) or [Zygisk Assistant](https://github.com/snake-4/Zygisk-Assistant) or [NoHello](https://github.com/MhmRdd/NoHello) module.
+- [KernelSU](https://github.com/tiann/KernelSU) with [Zygisk Next](https://github.com/Dr-TSNG/ZygiskNext) or [ReZygisk](https://github.com/PerformanC/ReZygisk) or [NeoZygisk](https://github.com/JingMatrix/NeoZygisk) module.
+- [KernelSU Next](https://github.com/KernelSU-Next/KernelSU-Next) with [Zygisk Next](https://github.com/Dr-TSNG/ZygiskNext) or [ReZygisk](https://github.com/PerformanC/ReZygisk) or [NeoZygisk](https://github.com/JingMatrix/NeoZygisk) module.
+- [APatch](https://github.com/bmax121/APatch) with [Zygisk Next](https://github.com/Dr-TSNG/ZygiskNext) or [ReZygisk](https://github.com/PerformanC/ReZygisk) or [NeoZygisk](https://github.com/JingMatrix/NeoZygisk) module.
 
 ## About module
 
-It injects a classes.dex file to modify fields in the android.os.Build class. Also, it creates a hook in the native code to modify system properties. These are spoofed only in the apps inside in the target list.
+It injects a classes.dex file to modify fields in the android.os.Build class. Also, it creates a hook in the native code to modify system properties. These are spoofed only in app processes marked in a target list.
 
-Also, there have a robust multi-target .json/prop, which only targeted specific apps with a differned FP than the default .json/prop. 
+It uses robust customised .json or.prop lists and/or a default json or.prop list that target specific app processes defined in a main target list ??
+
+
+multi-targetng
+
+configuring a target list and either a common prop/field value spoof list or prop/field value spoof lists that target particular processes.
+
+
 
 A example, inside in the target.txt write the package name but then create a com.android.vending.json/prop or com.google.android.gms.unstable.json/prop with what FP you want inside, etc.
 

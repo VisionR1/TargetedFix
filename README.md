@@ -1,12 +1,42 @@
-# Targeted Fix
-*Forked to be more flexible, with other apps in a target list, except only GMS.*
+# Targeted Fix (TF)
+*A fork of PIFork with a different aim.*
+
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/VisionR1/TargetedFix?label=Release&color=blue&style=flat)](https://github.com/VisionR1/TargetedFix/releases/latest)
 [![GitHub Release Date](https://img.shields.io/github/release-date/VisionR1/TargetedFix?label=Release%20Date&color=brightgreen&style=flat)](https://github.com/VisionR1/TargetedFix/releases)
 [![GitHub Releases](https://img.shields.io/github/downloads/VisionR1/TargetedFix/latest/total?label=Downloads%20%28Latest%20Release%29&color=blue&style=flat)](https://github.com/VisionR1/TargetedFix/releases/latest)
 [![GitHub All Releases](https://img.shields.io/github/downloads/VisionR1/TargetedFix/total?label=Total%20Downloads%20%28All%20Releases%29&color=brightgreen&style=flat)](https://github.com/VisionR1/TargetedFix/releases)
 
-A Zygisk module which "fixes" the FP to the apps in the target list.
+## Purpose
+
+A Zygisk module that features the ability to do multiple targeted spoofing of Build Field and System Property values. Multiple app processes can be targeted by configuring either a common prop/field value spoof list and a target list, or by creating prop/field value spoof lists that target particular processes.
+
+This allows a user to spoof almost any prop/field values to app processes other than GMS DroidGuard or Vending, making it extremely versatile.
+
+A common use is spoofing a different device when an app uses device identifiers, eg fingerprint, to limit use to devices on a whitelist.
+
+## Original USNF spoofProvider function.
+
+This principle USNF/PIF/PIFork function is retained to give TF the ability to break key attestation for calls made by DroidGuard. Useful for the legacy Play Integrity DEVICE integrity evaluation.
+
+spoofProvider registers a fake Keystore provider to break these calls with an exception (error) causing DroidGuard (on-device) to fall back to collecting non-attestation-key software signals for inclusion in a PI API token (delivery payload) that is used by Google servers to validate integrity verdicts. This is required to allow legacy DEVICE verdicts in unlocked devices with working Android Platform Key Attestation (Keymaster 3.0+).
+
+Note that spoofProvider is designed to target DroidGuard (com.google.android.gms.unstable) key attestation calls only, and can't (as yet) be configured to target other processes with TF. 
+
+## Original PIFork functions removed in TF
+
+• Root hiding needed for a Play Integrity legacy BASIC or higher response. TF doesn't include a function to hide root traces from DroidGuard, so either hiding with the GMS processes in denylist or whitelist hiding must be handled by another module. Note that Denylist should only be used as a list for other hiding modules as it will break Zygisk functions of this module if enforced (enabled).
+
+• Sensitive prop handling for DEVICE+ has been removed, so must be handled separately.
+
+• Various other script based fixes for some device-specific issues are removed.
+
+• spoofVendingSdk is removed as PI's sdkVersion can simply be spoofed with TF by spoofing a SDK_INT value to vending. Note that the equipment to spoofVendingSdk 1 is SDK_INT 32 (Android 12L).
+
+• spoofVendingFinger is removed as TF can easily spoof any fingerprint to vending.
+
+
+
 
 To use this module you must have one of the following (latest versions):
 

@@ -21,7 +21,7 @@ The original USNF mechanism, this has been the principal USNF/PIF/PIFork functio
 
 Detail: spoofProvider registers a fake Keystore provider to break these calls with an exception (error), causing DroidGuard (on-device) to fall back to collecting non-attestation-key software signals for inclusion in a PI API token (delivery payload) that is used by Google servers to validate integrity verdicts. This is required to allow legacy DEVICE verdicts in unlocked devices with working Android Platform Key Attestation (Keymaster 3.0+).
 
-Note that spoofProvider is designed to target DroidGuard (com.google.android.gms.unstable) key attestation calls only, and can't (yet) be configured to target other processes with TF. 
+Note that spoofProvider is designed to target DroidGuard (```com.google.android.gms.unstable```) key attestation calls only, and can't (yet) be configured to target other processes with TF. 
 
 ## Original PIFork functions *removed* in TF
 
@@ -53,7 +53,7 @@ To use this module you need one of the following combinations:
 - [KernelSU Next](https://github.com/KernelSU-Next/KernelSU-Next) with [Zygisk Next](https://github.com/Dr-TSNG/ZygiskNext) or [ReZygisk](https://github.com/PerformanC/ReZygisk) or [NeoZygisk](https://github.com/JingMatrix/NeoZygisk) module.
 - [APatch](https://github.com/bmax121/APatch) with [Zygisk Next](https://github.com/Dr-TSNG/ZygiskNext) or [ReZygisk](https://github.com/PerformanC/ReZygisk) or [NeoZygisk](https://github.com/JingMatrix/NeoZygisk) module.
 
-TF configuration files are all created or configured in the /data/adb/modules/targetedfix/config/ directory.
+TF configuration files are all created or configured in the```/data/adb/modules/targetedfix/config/```directory.
 
 For the purpose of this guide, spoof list files with a .prop format and file extension are indicated, but .json formatted files with the .json extension can be used instead and are compatible too. Note that a .json spoof list file (eg fix.json) will be bypassed if a .prop file (eg fix.prop) with the same name exists. Even if empty, the .prop file will be used by default, so delete or rename .prop files if using the .json file format in their stead.
 

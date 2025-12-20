@@ -7,6 +7,8 @@
 [![GitHub Releases](https://img.shields.io/github/downloads/VisionR1/TargetedFix/latest/total?label=Downloads%20%28Latest%20Release%29&color=blue&style=flat)](https://github.com/VisionR1/TargetedFix/releases/latest)
 [![GitHub All Releases](https://img.shields.io/github/downloads/VisionR1/TargetedFix/total?label=Total%20Downloads%20%28All%20Releases%29&color=brightgreen&style=flat)](https://github.com/VisionR1/TargetedFix/releases)
 
+[![TargetedFix Official XDA Thread](https://img.shields.io/badge/XDA_Forums-TargetedFix_Official_Thread-blue?logo=XDA-Developers&logoColor=white)](https://xdaforums.com/t/targetedfix-from-pifork.4735741/)
+
 ## Purpose
 
 A Zygisk module that features the ability to do **multi-targeted spoofing of different lists of System Property and Build Field values**. Multiple app processes can be targeted by configuring a target list and either a common prop/field value spoof list or prop/field value spoof lists that target particular processes.

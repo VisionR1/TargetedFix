@@ -4,9 +4,13 @@ plugins {
 
 android {
     namespace = "es.chiteroman.playintegrityfix"
-    compileSdk = 36
-    ndkVersion = "28.2.13676358"
-    buildToolsVersion = "36.0.0"
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
+    ndkVersion = "29.0.14206865"
+    buildToolsVersion = "36.1.0"
 
     buildFeatures {
         prefab = true

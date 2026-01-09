@@ -2,12 +2,12 @@
 *A fork of PIFork with a different aim.*
 
 
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/VisionR1/TargetedFix?label=Release&color=blue&style=flat)](https://github.com/VisionR1/TargetedFix/releases/latest)
-[![GitHub Release Date](https://img.shields.io/github/release-date/VisionR1/TargetedFix?label=Release%20Date&color=brightgreen&style=flat)](https://github.com/VisionR1/TargetedFix/releases)
-[![GitHub Releases](https://img.shields.io/github/downloads/VisionR1/TargetedFix/latest/total?label=Downloads%20%28Latest%20Release%29&color=blue&style=flat)](https://github.com/VisionR1/TargetedFix/releases/latest)
-[![GitHub All Releases](https://img.shields.io/github/downloads/VisionR1/TargetedFix/total?label=Total%20Downloads%20%28All%20Releases%29&color=brightgreen&style=flat)](https://github.com/VisionR1/TargetedFix/releases)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/VisionR1/TargetedFix?label=Release&labelColor=black&color=purple&style=for-the-badge)](https://github.com/VisionR1/TargetedFix/releases/latest)
+[![GitHub Release Date](https://img.shields.io/github/release-date/VisionR1/TargetedFix?label=Release%20Date&labelColor=black&color=purple&style=for-the-badge)](https://github.com/VisionR1/TargetedFix/releases)
+[![GitHub Releases](https://img.shields.io/github/downloads/VisionR1/TargetedFix/latest/total?label=Downloads%20%28Latest%20Release%29&labelColor=black&color=orange&style=for-the-badge)](https://github.com/VisionR1/TargetedFix/releases/latest)
+[![GitHub All Releases](https://img.shields.io/github/downloads/VisionR1/TargetedFix/total?label=Total%20Downloads%20%28All%20Releases%29&labelColor=black&color=orange&style=for-the-badge)](https://github.com/VisionR1/TargetedFix/releases)
 
-[![TargetedFix Official XDA Thread](https://img.shields.io/badge/XDA_Forums-TargetedFix_Official_Thread-blue?logo=XDA-Developers&logoColor=white)](https://xdaforums.com/t/targetedfix-from-pifork.4735741/)
+[![TargetedFix Official XDA Thread](https://img.shields.io/badge/XDA_Forums-TargetedFix_Official_Thread-0055AA?logo=XDA-Developers&logoColor=white&labelColor=black&style=for-the-badge)](https://xdaforums.com/t/targetedfix-from-pifork.4735741/)
 
 ## Purpose
 

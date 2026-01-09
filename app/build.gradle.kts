@@ -66,7 +66,7 @@ android {
 }
 
 dependencies {
-    implementation("dev.rikka.ndk.thirdparty:cxx:1.2.0")
+    implementation("org.lsposed.libcxx:libcxx:29.0.14206865")
     implementation("org.lsposed.hiddenapibypass:hiddenapibypass:6.1")
 }
 

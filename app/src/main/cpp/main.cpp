@@ -1,16 +1,15 @@
 #include <android/log.h>
 #include <sys/system_properties.h>
 #include <unistd.h>
-#include <fstream>
-#include <iostream>
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <sstream>
 #include <cctype>
+#include <map>
+#include <cstdio>
 
 #include "zygisk.hpp"
-#include "json.hpp"
+#include "json/single_include/nlohmann/json.hpp"
 #include "dobby.h"
 
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "TFIX/Native", __VA_ARGS__)
@@ -236,33 +235,41 @@ private:
 	std::vector<std::string> targetPackages;
 
     void parseTargetVector() {
-        if (targetVector.empty()) {
-            LOGD("Received empty target list from companion.");
-            return;
+        if (targetVector.empty()) return;
+
+        size_t start = 0;
+        size_t totalSize = targetVector.size();
+
+        for (size_t i = 0; i <= totalSize; ++i) {
+            // Detect newline or end of vector
+            if (i == totalSize || targetVector[i] == '\n') {
+                processLineFromVector(start, i);
+                start = i + 1;
+            }
         }
-        std::string content(targetVector.begin(), targetVector.end());
-        std::stringstream ss(content);
-        std::string line;
-        while (std::getline(ss, line)) {
-            std::string trimmedLine = "";
-            for (char c : line) {
-                if (!std::isspace(c)) {
-                    trimmedLine += c;
-                }
-            }
-            if (!trimmedLine.empty() && trimmedLine[0] != '#') {
-                std::string finalTrimmedLine = "";
-                int lastNonSpace = trimmedLine.length() - 1;
-                while (lastNonSpace >= 0 && std::isspace(trimmedLine[lastNonSpace])) {
-                    lastNonSpace--;
-                }
-                if (lastNonSpace >= 0) {
-                    finalTrimmedLine = trimmedLine.substr(0, lastNonSpace + 1);
-                } else {
-                    finalTrimmedLine = trimmedLine;
-                }
-                targetPackages.push_back(finalTrimmedLine);
-            }
+    }
+
+    void processLineFromVector(size_t lineStart, size_t lineEnd) {
+        size_t start = lineStart;
+
+        // 1. Skip leading whitespace and explicit \r
+        while (start < lineEnd && (std::isspace((unsigned char)targetVector[start]) || targetVector[start] == '\r')) {
+            start++;
+        }
+
+        // Empty or comment line
+        if (start >= lineEnd || targetVector[start] == '#') return;
+
+        size_t end = lineEnd;
+
+        // 2. Explicitly skip trailing whitespace and \r
+        // This is the most important part for CRLF files
+        while (end > start && (std::isspace((unsigned char)targetVector[end - 1]) || targetVector[end - 1] == '\r')) {
+            end--;
+        }
+
+        if (start < end) {
+            targetPackages.emplace_back(targetVector.data() + start, end - start);
         }
     }
     

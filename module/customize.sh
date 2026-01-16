@@ -1,23 +1,24 @@
-﻿#!/system/bin/sh
+#!/system/bin/sh
+# customize.sh - Safe Installer
 
-MODPATH=${0%/*}
-MODULE_NAME=targetedfix
-MODULE_PATH=/data/adb/modules/$MODULE_NAME
-UPDATE_PATH=/data/adb/modules_update/$MODULE_NAME
+# 1. Setup Variables
+# CRITICAL: Do NOT define MODPATH manually. Trust the Manager.
+MODID=targetedfix
+LIVE_PATH="/data/adb/modules/$MODID"
 
-ui_print "-> Installing $MODULE_NAME..."
+ui_print "- Installing TargetedFix..."
 
-# If old install exists = update/reinstall
-if [ -d "$MODULE_PATH/config" ]; then
-    ui_print "-> Backing up user configs..."
-    mkdir -p "$UPDATE_PATH/config"
-
-    for f in "$MODULE_PATH/config/"*; do
-        [ -s "$f" ] && cp -af "$f" "$UPDATE_PATH/config/"
-    done 2>/dev/null
+# 2. CONFIG RESTORATION
+# Check if config folder exists AND is not empty
+if [ -d "$LIVE_PATH/config" ] && [ "$(ls -A "$LIVE_PATH/config")" ]; then
+    ui_print "- Preserving user config..."
+    
+    # A. Delete the default 'config' folder
+    rm -rf "$MODPATH/config"
+    
+    # B. Copy the user's clean config folder
+    cp -af "$LIVE_PATH/config" "$MODPATH/"
 fi
 
-ui_print "-> $MODULE_NAME installation done!"
-ui_print "-> Thanks for using this module.🙂"
-
-exit 0
+ui_print "- Installation Done!"
+ui_print "- Thanks for using this module.🙂"

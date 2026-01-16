@@ -4,6 +4,8 @@
 - Update libcxx prefab
 - Update 5ec1cff/local_cxa_atexit_finalize_impl submodule.
 - Improved target.txt handling and organization
+- Improved customize.sh logic and compatibility
+- Fixed install/update failures on APatch/KernelSU
 
 ## Targeted Fix v3
 

@@ -15,7 +15,6 @@ android {
     packaging {
         jniLibs {
             excludes += "**/liblog.so"
-            excludes += "**/libdobby.so"
         }
     }
 
@@ -25,6 +24,11 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
+		
+		ndk {
+            abiFilters += "armeabi-v7a"
+            abiFilters += "arm64-v8a"
+        }
 
         externalNativeBuild {
             cmake {
@@ -62,7 +66,7 @@ android {
 }
 
 dependencies {
-    implementation("org.lsposed.libcxx:libcxx:29.0.14206865")
+    implementation("org.lsposed.libcxx:libcxx-full:30.0.16248370")
     implementation("org.lsposed.hiddenapibypass:hiddenapibypass:6.1")
 }
 

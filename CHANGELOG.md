@@ -1,8 +1,9 @@
-## Targeted Fix v5
+## TargetedFix v5 (ShadowHook)
 
-- Fix Build field spoofing on Android 17
+- Fix <A13 PI, Wallet and RCS failures from new GMS detection of Dobby by switching spoofProps libc hooking method to latest ShadowHook
+- Fix Build field spoofing on Android 17 (This is the same as the Dobby version)
 
-## Targeted Fix v4
+## TargetedFix v4
 
 - Add nlohmann/json as submodule
 - Update libcxx prefab

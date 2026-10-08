@@ -3,10 +3,10 @@ name: Android CI
 on:
   workflow_dispatch:
   push:
-    branches: main
+    branches: shadowhook
     paths-ignore: '**.md'
   pull_request:
-    branches: main
+    branches: shadowhook
     paths-ignore: '**.md'
 
 jobs:
@@ -36,6 +36,6 @@ jobs:
     - name: Upload CI module zip as artifact zip
       uses: actions/upload-artifact@v7
       with:
-        name: TargetedFix-CI_#${{ github.run_number }}
+        name: TargetedFix-ShadowHook-CI_#${{ github.run_number }}
         path: 'module/*'
         compression-level: 9
